@@ -9,10 +9,20 @@ class Block {
     this.data = data
     this.previousHash = previousHash
     this.Hash = this.calculateHash()
+    this.nonce = 0
   }
 
   calculateHash() {
-    return SHA256(this.index + this.previousHash + this.timestamp +  JSON.stringify(this.data)).toString()
+    return SHA256(this.index + this.previousHash + this.timestamp +  JSON.stringify(this.data) + this.nonce).toString()
+  }
+
+  mineblock (difficulty) {
+
+    while(this.Hash.substring(0, difficulty) != Array(difficulty + 1).join("0")) {
+      this.nonce++
+      this.Hash = this.calculateHash()
+    }
+    console.log('Block Mined: ' + this.Hash)
   }
 }
 
@@ -20,6 +30,7 @@ class Blockchain {
   
   constructor() {
     this.chain = [this.creategenesisblock()]
+    this.difficulty = 2
   }
 
   creategenesisblock() {
@@ -32,13 +43,30 @@ class Blockchain {
 
   addblock(newblock) {
     newblock.previousHash = this.getlatestblock().Hash
-    newblock.Hash = newblock.calculateHash()
+    newblock.mineblock(this.difficulty)
     this.chain.push(newblock)
+  }
+
+  validity() {
+    for (let i = 1; i < this.chain.length; i++) {
+      var curblock = this.chain[i]
+      var prevblock = this.chain[i - 1]
+
+      if (curblock.Hash != curblock.calculateHash()) {
+        return false
+      }
+
+      if (curblock.previousHash != prevblock.Hash) {
+        return false
+      }
+    }
+
+    return true
   }
 }
 
 var terrain = new Blockchain()
+console.log('Mining block 1...')
 terrain.addblock(new Block (1, "12/8/18", "{ amount: 4}"))
+console.log('Mining block 2...')
 terrain.addblock(new Block (2, "13/8/18", "{ amount: 4}"))
-
-console.log(JSON.stringify(terrain, null, 4))
