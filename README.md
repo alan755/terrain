@@ -1,2 +1,2 @@
 # terrain
-A simple blockchain in javascript.
+Basic blockchain structure in javascript.
